@@ -1,25 +1,73 @@
 #!/usr/bin/env node
 
 var semver = require('semver')
-var exec = require('child_process').exec
+var recursive = require('recursive-readdir')
+var async = require('async')
+var babel = require('babel-core')
 var fs = require('fs-extra')
+var path = require('path')
 
 var nodeVersion = process.version
 
 if (semver.satisfies(nodeVersion, '<=0.12.*')) {
-  backwardCompatibility()
+  var shelfPath = path.resolve(__dirname, '../../..')
+
+  movePreset(function (err) {
+    if (err) {
+      return console.error(err)
+    }
+
+    backwardCompatibility()
+  })
+}
+
+function movePreset (done) {
+  var babelPresetPath = path.resolve(
+    __dirname,
+    '../node_modules/babel-preset-es2015'
+  )
+
+  fs.move(
+    babelPresetPath,
+    path.resolve(shelfPath, 'node_modules/babel-preset-es2015'),
+    done
+  )
 }
 
 function backwardCompatibility () {
-  fs.move('./lib', './src', function (err) {
+  recursive('lib', function (err, files) {
     if (err) {
-      return console.error('first line', err)
+      return console.error(err)
     }
 
-    exec('cd node_modules/shelf-bc; mv .babelrc ../../; npm run transpile', function (err) {
+    files = files.map(function (file) {
+      return transformFileContent(file)
+    })
+
+    async.parallel(files, function (err) {
       if (err) {
-        return console.error('second line', err)
+        console.error(err)
       }
     })
   })
+}
+
+function transformFileContent (file) {
+  return function (done) {
+    var options = {
+      presets: ['es2015']
+    }
+
+    babel.transformFile(file, options, writeFileWithNewContent(file, done))
+  }
+}
+
+function writeFileWithNewContent (file, done) {
+  return function (err, result) {
+    if (err) {
+      return done(err)
+    }
+
+    fs.writeFile(file, result.code, done)
+  }
 }

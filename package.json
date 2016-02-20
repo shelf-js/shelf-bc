@@ -1,6 +1,6 @@
 {
   "name": "shelf-bc",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Shelf backward compatibility script",
   "bugs": {
     "url": "https://github.com/shelf-js/shelf-bc/issues"
@@ -11,8 +11,7 @@
     "shelf-bc": "bin/shelf-bc.js"
   },
   "scripts": {
-    "test": "standard --verbose | snazzy",
-    "transpile": "./node_modules/babel-cli/bin/babel.js ../../src -d ../../lib"
+    "test": "standard --verbose | snazzy"
   },
   "repository": {
     "type": "git",
@@ -33,9 +32,11 @@
     }
   ],
   "dependencies": {
-    "babel-cli": "^6.5.1",
+    "async": "^1.5.2",
+    "babel-core": "^6.5.2",
     "babel-preset-es2015": "^6.5.0",
     "fs-extra": "^0.26.5",
+    "recursive-readdir": "^1.3.0",
     "semver": "^5.1.0"
   },
   "devDependencies": {
