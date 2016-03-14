@@ -7,11 +7,17 @@ const fs = require('fs-extra')
 const path = require('path')
 const projectPath = process.cwd()
 
-recursive('lib', (err, files) => {
+async.series([
+  recursive.bind(recursive, 'lib'),
+  recursive.bind(recursive, 'test'),
+  (done) => done(
+    null,
+    path.resolve(projectPath, 'index.js')
+  )
+], (err, files) => {
   if (err) return console.error(err)
 
-  // Push index.js
-  files.push(path.resolve(projectPath, 'index.js'))
+  files = [].concat.apply([], files)
 
   files = files.map((file) => {
     return transformFileContent(file)
